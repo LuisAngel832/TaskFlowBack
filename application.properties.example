@@ -1,0 +1,20 @@
+# Configuración de base de datos
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driver-class-name=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+
+# JPA
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.jpa.hibernate.ddl-auto=create-drop
+spring.jpa.show-sql=true
+
+# H2 Console (para desarrollo)
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+
+# Logging
+logging.level.com.TaskFlow=DEBUG
+
+# Server
+server.port=8080
