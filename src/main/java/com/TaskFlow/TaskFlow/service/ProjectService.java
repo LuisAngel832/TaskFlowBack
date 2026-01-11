@@ -71,6 +71,7 @@ public class ProjectService {
         if (!project.getOwner().getEmail().equals(projectRequest.getOwnerEmail())) {
             throw new AccessDeniedException("No tienes permisos para actualizar este proyecto");
         }
+        
 
         Optional.ofNullable(projectRequest.getProjectName()).ifPresent(project::setName);
         Optional.ofNullable(projectRequest.getDescription()).ifPresent(project::setDescription);
