@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class CreateProyectResponse {
+public class ProjectResponse {
     private Long id;
     private String projectName;
     private String description;

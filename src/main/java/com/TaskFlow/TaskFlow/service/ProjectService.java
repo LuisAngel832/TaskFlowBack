@@ -4,20 +4,24 @@ import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 
 import com.TaskFlow.TaskFlow.dto.request.CreateProjectRequest;
+import com.TaskFlow.TaskFlow.dto.request.TransferOwnerRequest;
 import com.TaskFlow.TaskFlow.dto.request.UpdateProjectRequest;
 import com.TaskFlow.TaskFlow.dto.response.AddMemberResponse;
-import com.TaskFlow.TaskFlow.dto.response.CreateProyectResponse;
+import com.TaskFlow.TaskFlow.dto.response.ProjectResponse;
 import com.TaskFlow.TaskFlow.dto.response.UpdateProjectResponse;
 import com.TaskFlow.TaskFlow.entity.Project;
 import com.TaskFlow.TaskFlow.entity.ProjectMember;
 import com.TaskFlow.TaskFlow.entity.User;
 import com.TaskFlow.TaskFlow.exception.ResourceNotFoundException;
+import com.TaskFlow.TaskFlow.mapper.ProjectMapper;
 import com.TaskFlow.TaskFlow.repository.UserRepository;
 import com.TaskFlow.TaskFlow.repository.ProjectRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import com.TaskFlow.TaskFlow.repository.ProjectMemberRepository;
 
 import jakarta.transaction.Transactional;
@@ -28,17 +32,20 @@ public class ProjectService {
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
+    private final ProjectMapper projectMapper;
 
     public ProjectService(UserRepository userRepository,
             ProjectRepository projectRepository,
-            ProjectMemberRepository projectMemberRepository) {
+            ProjectMemberRepository projectMemberRepository,
+            ProjectMapper projectMapper) {
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
         this.projectMemberRepository = projectMemberRepository;
+        this.projectMapper = projectMapper;
     }
 
     @Transactional
-    public CreateProyectResponse createProject(CreateProjectRequest createProjectRequest) {
+    public ProjectResponse createProject(CreateProjectRequest createProjectRequest) {
         User owner = userRepository.findByEmail(createProjectRequest.getOwnerEmail())
                 .orElseThrow(() -> new RuntimeException("El propietario del proyecto no existe"));
 
@@ -54,7 +61,7 @@ public class ProjectService {
         member.setUser(owner);
         member.setJoinedAt(LocalDateTime.now());
 
-        return new CreateProyectResponse(
+        return new ProjectResponse(
                 projectSaved.getId(),
                 projectSaved.getName(),
                 projectSaved.getDescription(),
@@ -94,15 +101,18 @@ public class ProjectService {
         projectRepository.delete(project);
     }
 
-    public Project getProjectById(Long projectId) {
-        return projectRepository.findById(projectId)
+    public ProjectResponse getProjectById(Long projectId) {
+        Project project =  projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("El proyecto no existe"));
+        return projectMapper.toResponse(project);
     }
 
     // en este metodo falta validar que el userId corresponda al usuario
     // autenticado, eso lo aremos con spring security
-    public List<Project> getAllMyProjects(Long userId) {
-        return projectRepository.findAllByUserIdInvolved(userId);
+    public List<ProjectResponse> getAllMyProjects(Long userId) {
+        return projectRepository.findAllByUserIdInvolved(userId).stream()
+        .map(project -> projectMapper.toResponse(project))
+        .collect(Collectors.toList());
     }
 
     @Transactional
@@ -143,19 +153,22 @@ public class ProjectService {
     }
 
     @Transactional
-    public void transferOwnership(Long projectId, String currentOwnerEmail, String newOwnerEmail) throws AccessDeniedException {
-        Project project = projectRepository.findById(projectId)
+    public ProjectResponse transferOwnership(TransferOwnerRequest request) throws AccessDeniedException {
+        Project project = projectRepository.findById(request.getProjectId())
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado"));
 
         
-        if (!project.getOwner().getEmail().equals(currentOwnerEmail)) {
+        if (!project.getOwner().getEmail().equals(request.getCurrentOwnerEmail())) {
             throw new AccessDeniedException("Solo el propietario puede transferir el proyecto");
         }
 
-        User newOwner = userRepository.findByEmail(newOwnerEmail)
+        User newOwner = userRepository.findByEmail(request.getNewOwnerEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("El nuevo propietario no existe"));
 
         project.setOwner(newOwner);
         projectRepository.save(project);
+
+        return projectMapper.toResponse(project);
     }
+
 }
