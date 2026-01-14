@@ -9,9 +9,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ChangeStatusRequest {
-    @NotNull(message = "El id de la tarea no puede estar vacio")
-    private Long taskId;
-
     @NotNull(message = "El id del usuario no puede estar vacio")
     private Long userId;
 

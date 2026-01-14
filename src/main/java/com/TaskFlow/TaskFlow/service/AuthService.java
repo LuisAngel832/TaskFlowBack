@@ -26,25 +26,25 @@ public class AuthService {
         }
 
         User user = new User();
-        user.setUsername(registerRequest.getUsername());
+        user.setUsername(registerRequest.getName());
         user.setEmail(registerRequest.getEmail());
 
         //encriptar contraseña con bcrypt 
-        user.setPassword(registerRequest.getPassword());
+        user.setPasswordHash(registerRequest.getPassword());
 
         userRepository.save(user);
-        return new AuthResponse(user.getUsername(), user.getEmail());
+        return new AuthResponse(user.getId(), user.getUsername(), user.getEmail());
     }
 
     public AuthResponse loginUser(LoginRequest loginRequest) {
         User user = userRepository.findByEmail(loginRequest.getEmail())
         .orElseThrow(()-> new RuntimeException("Credenciales inválidas"));
 
-        if(!user.getPassword().equals(loginRequest.getPassword())) {
+        if(!user.getPasswordHash().equals(loginRequest.getPassword())) {
             throw new RuntimeException("Credenciales inválidas");
         }
 
 
-        return new AuthResponse(user.getUsername(), user.getEmail());
+        return new AuthResponse(user.getId(),user.getUsername(), user.getEmail());
     }
 }

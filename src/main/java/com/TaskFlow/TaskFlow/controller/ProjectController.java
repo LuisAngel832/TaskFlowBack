@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.TaskFlow.TaskFlow.dto.request.CreateProjectRequest;
 import com.TaskFlow.TaskFlow.dto.request.TransferOwnerRequest;
@@ -25,7 +25,7 @@ import com.TaskFlow.TaskFlow.service.ProjectService;
 
 import jakarta.validation.Valid;
 
-@RestControllerAdvice
+@RestController
 @RequestMapping("api/v1/projects")
 public class ProjectController {
     private final ProjectService projectService;
@@ -67,7 +67,7 @@ public class ProjectController {
     }
 
     @DeleteMapping("/{projectId}/members/{userId}")
-    public ResponseEntity<?> removeMember( @PathVariable Long projectId,@PathVariable Long userId){
+    public ResponseEntity<?> removeMember( @PathVariable Long projectId,@PathVariable Long userId) throws AccessDeniedException{
         projectService.removeMemberFromProject(projectId, userId);
         return ResponseEntity.noContent().build();
     }

@@ -3,6 +3,7 @@ package com.TaskFlow.TaskFlow.mapper;
 import org.springframework.stereotype.Component;
 import com.TaskFlow.TaskFlow.entity.Task;
 import com.TaskFlow.TaskFlow.entity.Project;
+import com.TaskFlow.TaskFlow.entity.EnumPriorityTask;
 
 import com.TaskFlow.TaskFlow.dto.request.CreateTaskRequest;
 import com.TaskFlow.TaskFlow.dto.response.TaskResponse;
@@ -14,6 +15,7 @@ public class TaskMapper {
         Task task = new Task();
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
+        task.setPriority(EnumPriorityTask.valueOf(request.getPriority().toUpperCase()));
         task.setDueDate(request.getDueDate());
         task.setProject(project);
         return task;

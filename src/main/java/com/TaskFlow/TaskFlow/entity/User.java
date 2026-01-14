@@ -3,7 +3,7 @@ package com.TaskFlow.TaskFlow.entity;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.Id;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -37,9 +37,9 @@ public class User {
     @NotBlank(message = "Deve ser un correo electrónico válido")
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "password_hash", nullable = false)
     @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
-    private String password;
+    private String passwordHash;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
