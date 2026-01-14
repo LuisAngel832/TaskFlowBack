@@ -46,7 +46,7 @@ public class ProjectService {
 
     @Transactional
     public ProjectResponse createProject(CreateProjectRequest createProjectRequest) {
-        User owner = userRepository.findByEmail(createProjectRequest.getOwnerEmail())
+        User owner = userRepository.findById(createProjectRequest.getUserId())
                 .orElseThrow(() -> new RuntimeException("El propietario del proyecto no existe"));
 
         Project project = new Project();
@@ -147,7 +147,7 @@ public class ProjectService {
             throw new ResourceNotFoundException("El usuario no existe");
         }
 
-        ProjectMember member = projectMemberRepository.findByProjectAndUser(projectId, userId)
+        ProjectMember member = projectMemberRepository.findByProjectIdAndUserId(projectId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("El miembro no existe en el proyecto"));
 
         projectMemberRepository.delete(member);

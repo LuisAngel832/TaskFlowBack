@@ -32,7 +32,7 @@ public class CreateTaskRequest {
     private String priority;
 
     @NotNull(message = "La fecha de vencimiento no puede estar vacía")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dueDate;
 
 

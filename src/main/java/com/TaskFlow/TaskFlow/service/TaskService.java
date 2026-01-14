@@ -18,8 +18,8 @@ import com.TaskFlow.TaskFlow.entity.EnumTaskStatus;
 import jakarta.transaction.Transactional;
 
 import com.TaskFlow.TaskFlow.repository.ProjectMemberRepository;
+import com.TaskFlow.TaskFlow.exception.AccessDeniedException;
 
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -96,7 +96,6 @@ public class TaskService {
         return taskMapper.toResponse(task);
     }
 
-
     @Transactional
     public void delteTask(Long taskId, Long userId) throws AccessDeniedException{
         Task task = taskRepository.findById(taskId)
@@ -111,12 +110,12 @@ public class TaskService {
 
     }
 
-    public TaskResponse changeStatus(ChangeStatusRequest request) throws AccessDeniedException{
+    public TaskResponse changeStatus(Long taskId,ChangeStatusRequest request) throws AccessDeniedException{
 
-        Task task = taskRepository.findById(request.getTaskId())
+        Task task = taskRepository.findById(taskId)
         .orElseThrow(()-> new ResourceNotFoundException("Tarea no encontrada"));
 
-        boolean isMember = projectMemberRepository.existByProjectIdAndUserId(task.getProject().getId(), request.getUserId());
+        boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(task.getProject().getId(), request.getUserId());
         boolean isOwner = task.getProject().getOwner().getId().equals(request.getUserId());
 
 
@@ -161,7 +160,7 @@ public class TaskService {
         // cuando tengamos spring security tendremos que validar que el usuario que esta haciendo la peticion sea
         //o el admin, o el usuario real
 
-        ProjectMember member = projectMemberRepository.findByProjectAndUser(task.getProject().getId(), userId)
+        ProjectMember member = projectMemberRepository.findByProjectIdAndUserId(task.getProject().getId(), userId)
         .orElseThrow(()-> new ResourceNotFoundException("El usuario no es colaborador del proyecto"));
 
         if(task.getAssignedTo() != null){
@@ -207,11 +206,6 @@ public class TaskService {
         return taskMapper.toResponse(taskRepository.save(task));
     }
 
-
-
-
-
-  
 
     private void validateOwnership(Project project, Long userId) throws AccessDeniedException {
         if (!project.getOwner().getId().equals(userId)) {
