@@ -7,6 +7,8 @@ import com.TaskFlow.TaskFlow.dto.request.RegisterRequest;
 import com.TaskFlow.TaskFlow.dto.response.AuthResponse;
 import com.TaskFlow.TaskFlow.entity.User;
 import com.TaskFlow.TaskFlow.repository.UserRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 
 import jakarta.transaction.Transactional;
 
@@ -14,6 +16,7 @@ import jakarta.transaction.Transactional;
 public class AuthService {
     
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public AuthService(UserRepository UserRepository) {
         this.userRepository = UserRepository;
@@ -29,8 +32,8 @@ public class AuthService {
         user.setUsername(registerRequest.getName());
         user.setEmail(registerRequest.getEmail());
 
-        //encriptar contraseña con bcrypt 
-        user.setPasswordHash(registerRequest.getPassword());
+         
+        user.setPasswordHash(passwordEncoder.encode(registerRequest.getPassword()));
 
         userRepository.save(user);
         return new AuthResponse(user.getId(), user.getUsername(), user.getEmail());
