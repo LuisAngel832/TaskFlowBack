@@ -46,7 +46,7 @@ public class ProjectService {
 
     @Transactional
     public ProjectResponse createProject(CreateProjectRequest createProjectRequest) {
-        User owner = userRepository.findByEmail(createProjectRequest.getOwnerEmail())
+        User owner = userRepository.findById(createProjectRequest.getUserId())
                 .orElseThrow(() -> new RuntimeException("El propietario del proyecto no existe"));
 
         Project project = new Project();
@@ -78,6 +78,7 @@ public class ProjectService {
         if (!project.getOwner().getEmail().equals(projectRequest.getOwnerEmail())) {
             throw new AccessDeniedException("No tienes permisos para actualizar este proyecto");
         }
+        
 
         Optional.ofNullable(projectRequest.getProjectName()).ifPresent(project::setName);
         Optional.ofNullable(projectRequest.getDescription()).ifPresent(project::setDescription);
@@ -146,19 +147,19 @@ public class ProjectService {
             throw new ResourceNotFoundException("El usuario no existe");
         }
 
-        ProjectMember member = projectMemberRepository.findByProjectAndUser(projectId, userId)
+        ProjectMember member = projectMemberRepository.findByProjectIdAndUserId(projectId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("El miembro no existe en el proyecto"));
 
         projectMemberRepository.delete(member);
     }
 
     @Transactional
-    public ProjectResponse transferOwnership(TransferOwnerRequest request) throws AccessDeniedException {
+    public ProjectResponse transferOwnership(TransferOwnerRequest request, String currentOwnerEmail) throws AccessDeniedException {
         Project project = projectRepository.findById(request.getProjectId())
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado"));
 
         
-        if (!project.getOwner().getEmail().equals(request.getCurrentOwnerEmail())) {
+        if (!project.getOwner().getEmail().equals(currentOwnerEmail)) {
             throw new AccessDeniedException("Solo el propietario puede transferir el proyecto");
         }
 

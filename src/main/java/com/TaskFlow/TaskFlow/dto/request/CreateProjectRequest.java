@@ -1,7 +1,7 @@
 package com.TaskFlow.TaskFlow.dto.request;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -13,7 +13,6 @@ public class CreateProjectRequest {
     private String projectName;
     @NotBlank(message = "La descripción del proyecto no puede estar vacía")
     private String description;
-    @Email(message = "Debe ser un correo electrónico válido")
-    @NotBlank(message = "El correo electrónico del propietario no puede estar vacío")
-    private String ownerEmail;
+    @NotNull(message = "El Id del propietario no puede estar vacío")
+    private Long userId;
 }
