@@ -1,6 +1,5 @@
 package com.TaskFlow.TaskFlow.entity;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -24,7 +23,7 @@ import jakarta.persistence.FetchType;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Project {
+public class Project extends Auditable {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,9 +35,6 @@ public class Project {
 
     @Column(columnDefinition = "TEXT")
     private String description;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)

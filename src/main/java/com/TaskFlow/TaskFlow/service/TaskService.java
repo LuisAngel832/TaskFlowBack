@@ -220,7 +220,7 @@ public class TaskService {
     }
 
     private void validateDueDate(LocalDateTime dueDate, Task task) {
-        if (dueDate.isBefore(task.getCreatedAt())) {
+        if (dueDate.isBefore(task.getCreatedDate())) {
             throw new IllegalArgumentException("La fecha de vencimiento debe ser futura");
         }
     }
