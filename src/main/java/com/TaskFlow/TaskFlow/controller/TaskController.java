@@ -2,6 +2,7 @@ package com.TaskFlow.TaskFlow.controller;
 
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -16,6 +17,7 @@ import com.TaskFlow.TaskFlow.dto.request.ChangeStatusRequest;
 import com.TaskFlow.TaskFlow.dto.request.CreateTaskRequest;
 import com.TaskFlow.TaskFlow.dto.request.UpdateTaskRequest;
 import com.TaskFlow.TaskFlow.dto.response.TaskResponse;
+import com.TaskFlow.TaskFlow.entity.User;
 import com.TaskFlow.TaskFlow.exception.AccessDeniedException;
 import com.TaskFlow.TaskFlow.service.TaskService;
 
@@ -32,20 +34,20 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<TaskResponse> createTask(@Valid @RequestBody CreateTaskRequest request) throws AccessDeniedException {
-        TaskResponse response = taskService.createTask(request);
+    public ResponseEntity<TaskResponse> createTask(@Valid @RequestBody CreateTaskRequest request, @AuthenticationPrincipal User user) throws AccessDeniedException {
+        TaskResponse response = taskService.createTask(request, user.getId());
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{taskId}")
-    public ResponseEntity<TaskResponse> updateTask(@Valid @RequestBody UpdateTaskRequest request, @PathVariable Long taskId){
-        TaskResponse response =taskService.updateTask(taskId, request);
+    public ResponseEntity<TaskResponse> updateTask(@Valid @RequestBody UpdateTaskRequest request, @AuthenticationPrincipal User user, @PathVariable Long taskId) throws AccessDeniedException {
+        TaskResponse response =taskService.updateTask(taskId, request,user.getId());
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{taskId}/users/{userId}")
-    public ResponseEntity<Void> deleteTask(@PathVariable Long taskId, @PathVariable Long userId) throws AccessDeniedException {
-        taskService.delteTask(taskId, userId);
+    @DeleteMapping("/{taskId}")
+    public ResponseEntity<Void> deleteTask(@PathVariable Long taskId, @AuthenticationPrincipal User user) throws AccessDeniedException {
+        taskService.delteTask(taskId,user.getId() );
         return ResponseEntity.noContent().build();
     }
 
@@ -56,9 +58,8 @@ public class TaskController {
     }
 
     @GetMapping
-    //despues cambiar a autenticacion
-    public ResponseEntity<List<TaskResponse>> getAllMyTask(Long userId){
-        List<TaskResponse> responses = taskService.getAllMyTask(userId);
+    public ResponseEntity<List<TaskResponse>> getAllMyTask(@AuthenticationPrincipal User user){
+        List<TaskResponse> responses = taskService.getAllMyTask(user.getId());
         return ResponseEntity.ok(responses);
     }
 
