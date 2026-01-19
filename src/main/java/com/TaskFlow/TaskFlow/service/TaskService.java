@@ -52,11 +52,11 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponse createTask(CreateTaskRequest request) throws AccessDeniedException {
+    public TaskResponse createTask(CreateTaskRequest request, Long userId) throws AccessDeniedException {
         Project project = projectRepository.findById(request.getProjectId())
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado"));
 
-        validateOwnership(project, request.getUserId());
+        validateOwnership(project, userId);
         validateDueDate(request.getDueDate()); 
 
  
@@ -72,11 +72,11 @@ public class TaskService {
 
 
     @Transactional
-    public TaskResponse updateTask(Long taskId, UpdateTaskRequest request) throws AccessDeniedException{
+    public TaskResponse updateTask(Long taskId, UpdateTaskRequest request, Long userId) throws AccessDeniedException{
         Task task = taskRepository.findById(taskId)
         .orElseThrow(()-> new ResourceNotFoundException("Tarea no encontrada"));
 
-        User user = userRepository.findById(request.getUserId())
+        User user = userRepository.findById(userId)
         .orElseThrow(()-> new ResourceNotFoundException("Usuario no encontrado"));
 
 

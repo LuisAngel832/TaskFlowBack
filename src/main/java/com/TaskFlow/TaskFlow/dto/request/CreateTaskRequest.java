@@ -17,8 +17,6 @@ public class CreateTaskRequest {
     @NotNull(message = "El ID del proyecto no puede estar vacio")
     private Long projectId;
 
-    @NotNull(message = "El  del usuario no puede esta vacio")
-    private Long userId;
 
     @Email(message = "El correo electrónico no es válido")
     private String assigneeEmail;

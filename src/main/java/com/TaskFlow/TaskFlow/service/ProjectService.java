@@ -154,12 +154,12 @@ public class ProjectService {
     }
 
     @Transactional
-    public ProjectResponse transferOwnership(TransferOwnerRequest request) throws AccessDeniedException {
+    public ProjectResponse transferOwnership(TransferOwnerRequest request, String currentOwnerEmail) throws AccessDeniedException {
         Project project = projectRepository.findById(request.getProjectId())
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado"));
 
         
-        if (!project.getOwner().getEmail().equals(request.getCurrentOwnerEmail())) {
+        if (!project.getOwner().getEmail().equals(currentOwnerEmail)) {
             throw new AccessDeniedException("Solo el propietario puede transferir el proyecto");
         }
 

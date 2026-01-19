@@ -30,13 +30,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Entity
 @Data
 @Table(name = "users")
 @AllArgsConstructor
 @NoArgsConstructor
-public class User implements UserDetails{
-    
+public class User implements UserDetails {
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -46,7 +48,7 @@ public class User implements UserDetails{
     private String username;
 
     @Column(unique = true, nullable = false, length = 100)
-    @NotBlank(message = "Deve ser un correo electrónico válido")
+    @NotBlank(message = "Debe ser un correo electrónico válido")
     private String email;
 
     @Column(name = "password_hash", nullable = false)
@@ -64,22 +66,44 @@ public class User implements UserDetails{
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
     private Set<Role> roles = new HashSet<>();
-    
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<ProjectMember> projectMemberships;
 
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
-        .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
-        .toList();
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                .toList();
     }
-
 
     @Override
     public String getPassword() {
-        return passwordHash;    
+        return passwordHash;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true; 
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true; 
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true; 
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true; 
     }
 }
