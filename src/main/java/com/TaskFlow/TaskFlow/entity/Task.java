@@ -24,7 +24,7 @@ import jakarta.validation.constraints.NotNull;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Task {
+public class Task extends Auditable {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,9 +50,6 @@ public class Task {
     @Column(name = "due_date", nullable = false)
     @NotNull(message = "La fecha de vencimiento no puede estar vacía")
     private LocalDateTime dueDate;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne(fetch =  FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
