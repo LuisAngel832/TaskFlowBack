@@ -186,6 +186,10 @@ public class TaskService {
             throw new ResourceNotFoundException("Usuario no encontrado");
         }
 
+        if(!task.getAssignedTo().getId().equals(requesterId)) {
+            throw new AccessDeniedException("No tienes permiso para desasignar esta tarea");
+        }
+
         task.setAssignedTo(null);
 
         return taskMapper.toResponse(taskRepository.save(task));
