@@ -45,9 +45,9 @@ public class ProjectService {
     }
 
     @Transactional
-    public ProjectResponse createProject(CreateProjectRequest createProjectRequest) {
-        User owner = userRepository.findById(createProjectRequest.getUserId())
-                .orElseThrow(() -> new RuntimeException("El propietario del proyecto no existe"));
+    public ProjectResponse createProject(Long userId, CreateProjectRequest createProjectRequest) {
+        User owner = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("El propietario del proyecto no existe"));
 
         Project project = new Project();
         project.setName(createProjectRequest.getProjectName());
@@ -69,16 +69,14 @@ public class ProjectService {
     }
 
     @Transactional
-    public UpdateProjectResponse updateProject(Long projectId, UpdateProjectRequest projectRequest)
+    public UpdateProjectResponse updateProject(Long projectId, String ownerEmail, UpdateProjectRequest projectRequest)
             throws AccessDeniedException {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("El proyecto no existe"));
 
-        // esto lo validaremos mas fuerte con spring security
-        if (!project.getOwner().getEmail().equals(projectRequest.getOwnerEmail())) {
+        if (!project.getOwner().getEmail().equals(ownerEmail)) {
             throw new AccessDeniedException("No tienes permisos para actualizar este proyecto");
         }
-        
 
         Optional.ofNullable(projectRequest.getProjectName()).ifPresent(project::setName);
         Optional.ofNullable(projectRequest.getDescription()).ifPresent(project::setDescription);
@@ -95,7 +93,6 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("El proyecto no existe"));
 
-        // esto lo validaremos mas fuerte con spring security
         if (!project.getOwner().getEmail().equals(ownerEmail)) {
             throw new AccessDeniedException("No tienes permisos para eliminar este proyecto");
         }
@@ -103,17 +100,15 @@ public class ProjectService {
     }
 
     public ProjectResponse getProjectById(Long projectId) {
-        Project project =  projectRepository.findById(projectId)
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("El proyecto no existe"));
         return projectMapper.toResponse(project);
     }
 
-    // en este metodo falta validar que el userId corresponda al usuario
-    // autenticado, eso lo aremos con spring security
     public List<ProjectResponse> getAllMyProjects(Long userId) {
         return projectRepository.findAllByUserIdInvolved(userId).stream()
-        .map(project -> projectMapper.toResponse(project))
-        .collect(Collectors.toList());
+                .map(project -> projectMapper.toResponse(project))
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -154,11 +149,11 @@ public class ProjectService {
     }
 
     @Transactional
-    public ProjectResponse transferOwnership(TransferOwnerRequest request, String currentOwnerEmail) throws AccessDeniedException {
+    public ProjectResponse transferOwnership(TransferOwnerRequest request, String currentOwnerEmail)
+            throws AccessDeniedException {
         Project project = projectRepository.findById(request.getProjectId())
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado"));
 
-        
         if (!project.getOwner().getEmail().equals(currentOwnerEmail)) {
             throw new AccessDeniedException("Solo el propietario puede transferir el proyecto");
         }
