@@ -57,10 +57,9 @@ public class TaskService {
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado"));
 
         validateOwnership(project, userId);
-        validateDueDate(request.getDueDate()); 
+        validateDueDate(request.getDueDate());
 
- 
-        Task task =taskMapper.toEntity(request, project);
+        Task task = taskMapper.toEntity(request, project);
 
         if (request.getAssigneeEmail() != null) {
             assignUserToTask(task, project, request.getAssigneeEmail());
@@ -70,25 +69,25 @@ public class TaskService {
         return taskMapper.toResponse(taskSaved);
     }
 
-
     @Transactional
-    public TaskResponse updateTask(Long taskId, UpdateTaskRequest request, Long userId) throws AccessDeniedException{
+    public TaskResponse updateTask(Long taskId, UpdateTaskRequest request, Long userId) throws AccessDeniedException {
         Task task = taskRepository.findById(taskId)
-        .orElseThrow(()-> new ResourceNotFoundException("Tarea no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Tarea no encontrada"));
 
         User user = userRepository.findById(userId)
-        .orElseThrow(()-> new ResourceNotFoundException("Usuario no encontrado"));
-
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
         validateOwnership(task.getProject(), user.getId());
-        if(request.getDueDate() != null){
-            validateDueDate(request.getDueDate(),task);
+        if (request.getDueDate() != null) {
+            validateDueDate(request.getDueDate(), task);
         }
 
         Optional.ofNullable(request.getTitle()).ifPresent(task::setTitle);
         Optional.ofNullable(request.getDescription()).ifPresent(task::setDescription);
-        Optional.ofNullable(request.getStatus()).ifPresent(status -> task.setStatus(EnumTaskStatus.valueOf(status.toUpperCase())));
-        Optional.ofNullable(request.getPriority()).ifPresent(priority -> task.setPriority(EnumPriorityTask.valueOf(priority)));
+        Optional.ofNullable(request.getStatus())
+                .ifPresent(status -> task.setStatus(EnumTaskStatus.valueOf(status.toUpperCase())));
+        Optional.ofNullable(request.getPriority())
+                .ifPresent(priority -> task.setPriority(EnumPriorityTask.valueOf(priority)));
         Optional.ofNullable(request.getDueDate()).ifPresent(task::setDueDate);
 
         taskRepository.save(task);
@@ -97,12 +96,12 @@ public class TaskService {
     }
 
     @Transactional
-    public void delteTask(Long taskId, Long userId) throws AccessDeniedException{
+    public void delteTask(Long taskId, Long userId) throws AccessDeniedException {
         Task task = taskRepository.findById(taskId)
-        .orElseThrow(()-> new ResourceNotFoundException("Tarea no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Tarea no encontrada"));
 
         User user = userRepository.findById(userId)
-        .orElseThrow(()-> new ResourceNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
         validateOwnership(task.getProject(), user.getId());
 
@@ -110,65 +109,60 @@ public class TaskService {
 
     }
 
-    public TaskResponse changeStatus(Long taskId,ChangeStatusRequest request) throws AccessDeniedException{
+    public TaskResponse changeStatus(Long taskId, ChangeStatusRequest request) throws AccessDeniedException {
 
         Task task = taskRepository.findById(taskId)
-        .orElseThrow(()-> new ResourceNotFoundException("Tarea no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Tarea no encontrada"));
 
-        boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(task.getProject().getId(), request.getUserId());
+        boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(task.getProject().getId(),
+                request.getUserId());
         boolean isOwner = task.getProject().getOwner().getId().equals(request.getUserId());
 
-
-        if(!isMember && !isOwner){
+        if (!isMember && !isOwner) {
             throw new AccessDeniedException("No tienes permiso para cambiar el estado");
         }
-        try{
+        try {
             task.setStatus(EnumTaskStatus.valueOf(request.getStatus().toUpperCase()));
-        }catch(IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Estado no valido: " + request.getStatus());
-        } 
+        }
 
         taskRepository.save(task);
 
         return taskMapper.toResponse(task);
     }
 
-
-    public List<TaskResponse> getAllMyTask(Long userId){
-        if(!userRepository.existsById(userId)){
+    public List<TaskResponse> getAllMyTask(Long userId) {
+        if (!userRepository.existsById(userId)) {
             throw new ResourceNotFoundException("Usuario no encontrado");
         }
 
         List<Task> listTask = taskRepository.findAllTasksForUser(userId);
 
-        if(listTask.isEmpty()){
+        if (listTask.isEmpty()) {
             return new ArrayList<>();
         }
 
         return listTask.stream()
-        .map(task -> taskMapper.toResponse(task))
-        .collect(Collectors.toList());
+                .map(task -> taskMapper.toResponse(task))
+                .collect(Collectors.toList());
     }
 
-
     @Transactional
-    public TaskResponse assignedTask(Long userId, Long taskId) throws AccessDeniedException{
+    public TaskResponse assignedTask(Long userId, Long taskId) throws AccessDeniedException {
 
         Task task = taskRepository.findById(taskId)
-        .orElseThrow(()-> new ResourceNotFoundException("Tarea no encontrada"));
-
-        // cuando tengamos spring security tendremos que validar que el usuario que esta haciendo la peticion sea
-        //o el admin, o el usuario real
+                .orElseThrow(() -> new ResourceNotFoundException("Tarea no encontrada"));
 
         ProjectMember member = projectMemberRepository.findByProjectIdAndUserId(task.getProject().getId(), userId)
-        .orElseThrow(()-> new ResourceNotFoundException("El usuario no es colaborador del proyecto"));
+                .orElseThrow(() -> new ResourceNotFoundException("El usuario no es colaborador del proyecto"));
 
-        if(task.getAssignedTo() != null){
+        if (task.getAssignedTo() != null) {
             throw new AccessDeniedException("La tarea ya tiene un usuario asignado");
         }
 
-        if(task.getProject()!=member.getProject()){
-            throw new IllegalStateException("La tarea no pertenece al proyecto del colaboracor");
+        if (task.getProject() != member.getProject()) {
+            throw new AccessDeniedException("La tarea no pertenece al proyecto del colaboracor");
         }
 
         task.setAssignedTo(member.getUser());
@@ -178,34 +172,24 @@ public class TaskService {
         return taskMapper.toResponse(task);
     }
 
-    //aqui tenemos que validar con security que el que solicita la desasignacion sea el mismo  
-    // usuario que el que esta asignado en la tarea o el admin
     @Transactional
-    public TaskResponse dassignedTask(Long taskId, Long requesterId) throws AccessDeniedException{
+    public TaskResponse dassignedTask(Long taskId, Long requesterId) throws AccessDeniedException {
 
         Task task = taskRepository.findById(taskId)
-        .orElseThrow(()-> new ResourceNotFoundException("Tarea no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Tarea no encontrada"));
 
-        if(task.getAssignedTo() == null){
-            throw new IllegalStateException("No hay ningun usuario asignado");
+        if (task.getAssignedTo() == null) {
+            throw new ResourceNotFoundException("No hay ningun usuario asignado");
         }
 
-        if(!userRepository.existsById(requesterId)){
+        if (!userRepository.existsById(requesterId)) {
             throw new ResourceNotFoundException("Usuario no encontrado");
         }
 
-        //aqui validaremos el punto de arriba
-
-        if(!task.getAssignedTo().getId().equals(requesterId) && !task.getProject().getOwner().getId().equals(requesterId)){
-            throw new AccessDeniedException("No tienes permiso para desasignar esta tarea");
-        }
-
         task.setAssignedTo(null);
-        
 
         return taskMapper.toResponse(taskRepository.save(task));
     }
-
 
     private void validateOwnership(Project project, Long userId) throws AccessDeniedException {
         if (!project.getOwner().getId().equals(userId)) {
@@ -224,7 +208,6 @@ public class TaskService {
             throw new IllegalArgumentException("La fecha de vencimiento debe ser futura");
         }
     }
-    
 
     private void assignUserToTask(Task task, Project project, String email) {
         if (!projectMemberRepository.existsByProjectIdAndUserEmail(project.getId(), email)) {
@@ -236,4 +219,3 @@ public class TaskService {
         task.setAssignedTo(user);
     }
 }
-
