@@ -321,13 +321,10 @@ volumes:
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
 
-## 📝 Licencia
-
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
 
 ## 👥 Autores
 
-- **Tu Nombre** - *Desarrollo inicial* - [@tu-github](https://github.com/tu-github)
+- **Luis Angel Rodriguez** - *Desarrollo inicial* - [@LuisAngel832](https://github.com/LuisAngel832)
 
 ## 🙏 Agradecimientos
 
