@@ -46,8 +46,8 @@ public class ProjectController {
         @ApiResponse(responseCode = "400", description = "Datos inválidos")
     })
     @PostMapping
-    public ResponseEntity<ProjectResponse> createProject(@Valid @RequestBody CreateProjectRequest request){
-        return ResponseEntity.status(HttpStatus.CREATED).body(projectService.createProject(request));
+    public ResponseEntity<ProjectResponse> createProject(@Valid @RequestBody CreateProjectRequest request, @AuthenticationPrincipal User user){
+        return ResponseEntity.status(HttpStatus.CREATED).body(projectService.createProject(user.getId(), request));
     }
 
     @Operation(summary = "Actualizar un proyecto existente", description = "Actualiza los detalles de un proyecto existente.")
@@ -58,8 +58,8 @@ public class ProjectController {
         @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")
     })
     @PutMapping("/{projectId}")
-    public ResponseEntity<UpdateProjectResponse> updateProject(@PathVariable Long projectId, @Valid @RequestBody UpdateProjectRequest request) throws AccessDeniedException{
-        return ResponseEntity.ok(projectService.updateProject(projectId, request));
+    public ResponseEntity<UpdateProjectResponse> updateProject(@PathVariable Long projectId, @Valid @RequestBody UpdateProjectRequest request, @AuthenticationPrincipal User user) throws AccessDeniedException{
+        return ResponseEntity.ok(projectService.updateProject(projectId, user.getEmail(), request));
     }
 
     @Operation(summary = "Obtener todos los proyectos del usuario autenticado", description = "Retorna una lista de todos los proyectos asociados al usuario actualmente autenticado.")

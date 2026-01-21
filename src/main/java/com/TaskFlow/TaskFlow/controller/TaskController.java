@@ -107,8 +107,8 @@ public class TaskController {
         @ApiResponse(responseCode = "404", description = "Tarea o usuario no encontrado")
     })
     @PutMapping("/{taskId}/assign/{userId}")
-    public ResponseEntity<TaskResponse> assignTask(@Parameter(description = "ID de la tarea") @PathVariable Long taskId, @Parameter(description = "ID del usuario a asignar") @PathVariable Long userId) throws AccessDeniedException {
-        TaskResponse response = taskService.assignedTask(userId, taskId);
+    public ResponseEntity<TaskResponse> assignTask(@Parameter(description = "ID de la tarea") @PathVariable Long taskId, @Parameter(description = "ID del usuario a asignar") @AuthenticationPrincipal User user) throws AccessDeniedException {
+        TaskResponse response = taskService.assignedTask(user.getId(), taskId);
         return ResponseEntity.ok(response);
     }
 
@@ -119,8 +119,8 @@ public class TaskController {
         @ApiResponse(responseCode = "404", description = "Tarea o usuario no encontrado")
     })
     @PutMapping("/{taskId}/unassign/{userId}")
-    public ResponseEntity<TaskResponse> dassignedTask(@Parameter(description = "ID de la tarea") @PathVariable Long taskId, @Parameter(description = "ID del usuario a desasignar") @PathVariable Long userId) throws AccessDeniedException {
-        TaskResponse response = taskService.dassignedTask(taskId, userId);
+    public ResponseEntity<TaskResponse> dassignedTask(@Parameter(description = "ID de la tarea") @PathVariable Long taskId, @Parameter(description = "ID del usuario a desasignar") @AuthenticationPrincipal User user) throws AccessDeniedException {
+        TaskResponse response = taskService.dassignedTask(taskId, user.getId());
         return ResponseEntity.ok(response);
     }
 
